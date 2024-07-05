@@ -80,7 +80,7 @@ export default function Home() {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center p-24">
         <h1 className="text-3xl text-center mb-4 font-bold">
-          Welcome to calvodev 🧑‍🦲
+          Welcome to CalvoDev 🧑‍🦲
         </h1>
         <Card className="w-full max-w-5xl p-6 space-y-6 ">
           <form
