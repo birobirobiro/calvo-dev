@@ -8,7 +8,7 @@ export async function POST(req: Request): Promise<Response> {
     const replicateApiKey = data.get("replicateApiKey") as string;
     const imageApiKey = data.get("imageApiKey") as string;
     const imageFile = data.get("image") as File;
-    const prompt = "Remove hair from the uploaded image to make the person appear bald";
+    const prompt = `Please remove all hair from the person's head in the uploaded image, ensuring the person appears naturally bald maintain the original facial features and skin tone for a realistic transformation`;    
     const checkpoint_model = "realistic - sdxlUnstableDiffusers_nihilmania";
 
     if (!replicateApiKey || !imageApiKey || !imageFile || !prompt) {
