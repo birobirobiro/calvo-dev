@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify(prediction), { status: 201 });
 
   } catch (error) {
-    console.error(error);
+    console.error('Error creating prediction:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ detail: errorMessage }), { status: 500 });
   }

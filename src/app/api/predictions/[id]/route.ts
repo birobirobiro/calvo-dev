@@ -6,17 +6,25 @@ const replicate = new Replicate({
 
 export async function GET(request: Request,
   { params }: { params: { id: string } }) {
-  const prediction = await replicate.predictions.get(params.id);
+  try {
+    const prediction = await replicate.predictions.get(params.id);
 
-  if (prediction?.error) {
+    if (prediction?.error) {
+      return new Response(
+        JSON.stringify({ detail: prediction.error.detail }),
+        { status: 500 }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ detail: prediction.error.detail }),
+      JSON.stringify(prediction),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error fetching prediction:', error);
+    return new Response(
+      JSON.stringify({ detail: 'Failed to fetch prediction' }),
       { status: 500 }
     );
   }
-
-  return new Response(
-    JSON.stringify(prediction),
-    { status: 200 }
-  );
 }

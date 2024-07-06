@@ -35,41 +35,48 @@ export default function Home() {
     e.preventDefault();
     setLog([]);
     setError(null);
-
+  
     const formData = new FormData(e.currentTarget);
     formData.append("replicateApiKey", replicateApiKey);
     formData.append("imageApiKey", imageApiKey);
-
-    const response = await fetch("/api/predictions", {
-      method: "POST",
-      body: formData,
-    });
-
-    let prediction = await response.json();
-    if (response.status !== 201) {
-      setError(prediction.detail);
-      setLog((prev) => [...prev, `Error: ${prediction.detail}`]);
-      return;
-    }
-    setPrediction(prediction);
-    setLog((prev) => [...prev, `Prediction started: ${prediction.id}`]);
-
-    while (
-      prediction.status !== "succeeded" &&
-      prediction.status !== "failed"
-    ) {
-      await sleep(1000);
-      const response = await fetch(`/api/predictions/${prediction.id}`, {
-        cache: "no-store",
+  
+    try {
+      const response = await fetch("/api/predictions", {
+        method: "POST",
+        body: formData,
       });
-      prediction = await response.json();
-      if (response.status !== 200) {
-        setError(prediction.detail);
-        setLog((prev) => [...prev, `Error: ${prediction.detail}`]);
-        return;
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail);
       }
-      setLog((prev) => [...prev, `Prediction status: ${prediction.status}`]);
+  
+      let prediction = await response.json();
       setPrediction(prediction);
+      setLog((prev) => [...prev, `Prediction started: ${prediction.id}`]);
+  
+      while (
+        prediction.status !== "succeeded" &&
+        prediction.status !== "failed"
+      ) {
+        await sleep(1000);
+        const response = await fetch(`/api/predictions/${prediction.id}`, {
+          cache: "no-store",
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail);
+        }
+  
+        prediction = await response.json();
+        setLog((prev) => [...prev, `Prediction status: ${prediction.status}`]);
+        setPrediction(prediction);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setError(errorMessage);
+      setLog((prev) => [...prev, `Error: ${errorMessage}`]);
     }
   };
 
