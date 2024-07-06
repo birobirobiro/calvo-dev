@@ -35,26 +35,26 @@ export default function Home() {
     e.preventDefault();
     setLog([]);
     setError(null);
-  
+
     const formData = new FormData(e.currentTarget);
     formData.append("replicateApiKey", replicateApiKey);
     formData.append("imageApiKey", imageApiKey);
-  
+
     try {
       const response = await fetch("/api/predictions", {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail);
       }
-  
+
       let prediction = await response.json();
       setPrediction(prediction);
       setLog((prev) => [...prev, `Prediction started: ${prediction.id}`]);
-  
+
       while (
         prediction.status !== "succeeded" &&
         prediction.status !== "failed"
@@ -63,18 +63,19 @@ export default function Home() {
         const response = await fetch(`/api/predictions/${prediction.id}`, {
           cache: "no-store",
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.detail);
         }
-  
+
         prediction = await response.json();
         setLog((prev) => [...prev, `Prediction status: ${prediction.status}`]);
         setPrediction(prediction);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
       setError(errorMessage);
       setLog((prev) => [...prev, `Error: ${errorMessage}`]);
     }
@@ -86,9 +87,17 @@ export default function Home() {
         <title>calvodev</title>
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center p-24">
-        <h1 className="text-3xl text-center mb-4 font-bold">
-          Welcome to CalvoDev 🧑‍🦲
+        <div className="flex flex-col w-full max-w-3xl mb-4 gap-4">
+        <h1 className="text-3xl text-center font-bold">
+          CalvoDev 🧑‍🦲
         </h1>
+
+        <p className="text-center text-muted-foreground">
+          Transform your profile pictures into bald versions with the power of
+          Replicate AI. Experience the fun and share your new look with friends!
+        </p>
+        
+        </div>
         <Card className="w-full max-w-5xl p-6 space-y-6 ">
           <form
             onSubmit={handleSubmit}
@@ -119,7 +128,7 @@ export default function Home() {
               href="https://freeimage.host/page/api"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-500 "
+              className="text-sm text-blue-500"
             >
               Get your API key here
             </Link>
