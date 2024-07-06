@@ -35,26 +35,26 @@ export default function Home() {
     e.preventDefault();
     setLog([]);
     setError(null);
-
+  
     const formData = new FormData(e.currentTarget);
     formData.append("replicateApiKey", replicateApiKey);
     formData.append("imageApiKey", imageApiKey);
-
+  
     try {
       const response = await fetch("/api/predictions", {
         method: "POST",
         body: formData,
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail);
       }
-
+  
       let prediction = await response.json();
       setPrediction(prediction);
       setLog((prev) => [...prev, `Prediction started: ${prediction.id}`]);
-
+  
       while (
         prediction.status !== "succeeded" &&
         prediction.status !== "failed"
@@ -63,12 +63,12 @@ export default function Home() {
         const response = await fetch(`/api/predictions/${prediction.id}`, {
           cache: "no-store",
         });
-
+  
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.detail);
         }
-
+  
         prediction = await response.json();
         setLog((prev) => [...prev, `Prediction status: ${prediction.status}`]);
         setPrediction(prediction);
@@ -78,6 +78,7 @@ export default function Home() {
         error instanceof Error ? error.message : "Unknown error occurred";
       setError(errorMessage);
       setLog((prev) => [...prev, `Error: ${errorMessage}`]);
+      console.error('Error during prediction:', error);  
     }
   };
 
