@@ -2,7 +2,7 @@ import Replicate from "replicate";
 
 const FREEIMAGE_API_URL = "https://freeimage.host/api/1/upload";
 
-export async function POST(req: Request) {
+export async function POST(req: Request): Promise<Response> {
   try {
     const data = await req.formData();
     const replicateApiKey = data.get("replicateApiKey") as string;
@@ -36,13 +36,13 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify(prediction), { status: 201 });
 
   } catch (error) {
-    console.error('Error creating prediction:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error("Error creating prediction:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
     return new Response(JSON.stringify({ detail: errorMessage }), { status: 500 });
   }
 }
 
-async function uploadImageToFreeimageHost(imageFile: File, imageApiKey: string) {
+async function uploadImageToFreeimageHost(imageFile: File, imageApiKey: string): Promise<string | null> {
   const formData = new FormData();
   formData.append("key", imageApiKey);
   formData.append("action", "upload");

@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, FormEvent } from "react";
 import Head from "next/head";
 import Image from "next/image";
-import { Prediction } from "replicate";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,6 +10,13 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+interface Prediction {
+  id: string;
+  status: string;
+  output?: string[];
+  error?: { detail: string };
+}
 
 export default function Home() {
   const [prediction, setPrediction] = useState<Prediction | null>(null);
@@ -31,30 +37,30 @@ export default function Home() {
     scrollToBottom();
   }, [log]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLog([]);
     setError(null);
-  
+
     const formData = new FormData(e.currentTarget);
     formData.append("replicateApiKey", replicateApiKey);
     formData.append("imageApiKey", imageApiKey);
-  
+
     try {
       const response = await fetch("/api/predictions", {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail);
       }
-  
-      let prediction = await response.json();
+
+      let prediction: Prediction = await response.json();
       setPrediction(prediction);
       setLog((prev) => [...prev, `Prediction started: ${prediction.id}`]);
-  
+
       while (
         prediction.status !== "succeeded" &&
         prediction.status !== "failed"
@@ -63,12 +69,12 @@ export default function Home() {
         const response = await fetch(`/api/predictions/${prediction.id}`, {
           cache: "no-store",
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.detail);
         }
-  
+
         prediction = await response.json();
         setLog((prev) => [...prev, `Prediction status: ${prediction.status}`]);
         setPrediction(prediction);
@@ -78,7 +84,7 @@ export default function Home() {
         error instanceof Error ? error.message : "Unknown error occurred";
       setError(errorMessage);
       setLog((prev) => [...prev, `Error: ${errorMessage}`]);
-      console.error('Error during prediction:', error);  
+      console.error("Error during prediction:", error);
     }
   };
 
@@ -89,17 +95,15 @@ export default function Home() {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center p-24">
         <div className="flex flex-col w-full max-w-3xl mb-4 gap-4">
-        <h1 className="text-3xl text-center font-bold">
-          CalvoDev 🧑‍🦲
-        </h1>
-
-        <p className="text-center text-muted-foreground">
-          Transform your profile pictures into bald versions with the power of
-          Replicate AI. Experience the fun and share your new look with friends!
-        </p>
-        
+          <h1 className="text-3xl text-center font-bold">
+            CalvoDev 🧑‍🦲
+          </h1>
+          <p className="text-center text-muted-foreground">
+            Transform your profile pictures into bald versions with the power of
+            Replicate AI. Experience the fun and share your new look with friends!
+          </p>
         </div>
-        <Card className="w-full max-w-5xl p-6 space-y-6 ">
+        <Card className="w-full max-w-5xl p-6 space-y-6">
           <form
             onSubmit={handleSubmit}
             className="flex flex-col items-center w-full space-y-4"
